@@ -1,3 +1,5 @@
+import { formatAt } from './utils.js';
+
 export function element(tag, className = '', text = '') {
   const node = document.createElement(tag);
   if (className) node.className = className;
@@ -48,4 +50,20 @@ export function renderLocation(location, timezone = location.timezone) {
   document.getElementById('location-date').textContent = 'Forecast for your selected location';
   document.getElementById('welcome').hidden = true;
   document.getElementById('weather-shell').hidden = false;
+}
+
+export function renderCurrentWeather(weather, location, fetchedAt) {
+  renderLocation(location, weather.timezoneKnown ? weather.timezone : 'UTC · location timezone unavailable');
+  document.getElementById('location-date').textContent = formatAt(Date.now() / 1000, weather.timezone, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+  const temperature = document.getElementById('current-temperature');
+  temperature.replaceChildren();
+  if (weather.current.temperature === null) temperature.append(element('span', 'unavailable', 'Unavailable'));
+  else temperature.append(document.createTextNode(Math.round(weather.current.temperature)), element('span', 'temp-unit', '°C'));
+  document.getElementById('current-condition').textContent = weather.current.code === null ? 'Condition unavailable' : `Weather code ${weather.current.code}`;
+  document.getElementById('current-art').replaceChildren(icon('unknown', true));
+  document.getElementById('day-period').textContent = weather.current.isDay === true ? 'Daytime' : weather.current.isDay === false ? 'Nighttime' : 'Daylight unavailable';
+  document.getElementById('model-time').textContent = `Model valid ${formatAt(weather.current.time, weather.timezone, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })}`;
+  document.getElementById('last-updated').textContent = `Retrieved ${formatAt(fetchedAt / 1000, weather.timezone)} · ${weather.timezone}`;
+  document.getElementById('data-quality').textContent = 'Current model estimates · daily forecasts';
+  document.getElementById('weather-content').hidden = false;
 }

@@ -68,3 +68,11 @@ export async function searchLocations(query, options) {
   if (data.results.length && !locations.length) throw new ApiError('data', 'The location service returned incomplete location details. Please try again.');
   return locations.slice(0, 8);
 }
+
+export function buildForecastURL(location) {
+  if (!normalizeLocation(location)) throw new ApiError('location', 'Choose a valid city before requesting weather.');
+  const url = new URL(FORECAST_URL);
+  url.search = new URLSearchParams({ latitude: String(location.latitude), longitude: String(location.longitude), current: 'temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m,wind_direction_10m,pressure_msl,is_day', daily: 'temperature_2m_max,temperature_2m_min,weather_code,sunrise,sunset', timezone: 'auto', timeformat: 'unixtime', temperature_unit: 'celsius', wind_speed_unit: 'kmh', forecast_days: '5' });
+  return url.href;
+}
+export function fetchWeather(location, options) { return requestJSON(buildForecastURL(location), options); }

@@ -1,9 +1,11 @@
 import { initializeSearchForm, chooseLocation } from './search.js';
-import { searchLocations, createLatestRequest } from './api.js';
-import { renderLocations, renderLocation, setSearchBusy, announce } from './ui.js';
+import { searchLocations, fetchWeather, createLatestRequest } from './api.js';
+import { normalizeWeather } from './weather.js';
+import { renderLocations, renderLocation, renderCurrentWeather, setSearchBusy, announce } from './ui.js';
 
 const state = { locations: [], location: null, weather: null, unit: 'celsius', fetchedAt: null, lastQuery: '' };
 const searchGate = createLatestRequest();
+const weatherGate = createLatestRequest();
 const searchInput = initializeSearchForm(runSearch);
 
 async function runSearch(query) {
@@ -42,7 +44,34 @@ function selectLocation(location) {
   renderLocation(location);
   document.getElementById('location-name').focus();
   announce(`Selected ${location.name}, ${location.country || location.admin1 || 'region unavailable'}.`);
+  loadWeather(location);
 }
+
+async function loadWeather(location) {
+  const request = weatherGate.begin();
+  state.weather = null;
+  document.getElementById('weather-content').hidden = true;
+  document.getElementById('weather-error').hidden = true;
+  document.getElementById('weather-loading').hidden = false;
+  document.getElementById('weather-shell').setAttribute('aria-busy', 'true');
+  document.getElementById('refresh-weather').disabled = false;
+  try {
+    const response = await fetchWeather(location, { signal: request.signal });
+    if (!request.isCurrent()) return;
+    state.response = response; state.weather = normalizeWeather(response); state.fetchedAt = Date.now();
+    renderCurrentWeather(state.weather, location, state.fetchedAt);
+    announce(`Weather estimates loaded for ${location.name}.`);
+  } catch (error) {
+    if (!request.isCurrent() || error.kind === 'cancelled') return;
+    document.getElementById('weather-error-message').textContent = error.message;
+    document.getElementById('weather-error').hidden = false;
+    announce(error.message);
+  } finally {
+    if (request.isCurrent()) { document.getElementById('weather-loading').hidden = true; document.getElementById('weather-shell').setAttribute('aria-busy', 'false'); }
+  }
+}
+document.getElementById('refresh-weather').addEventListener('click', () => { if (state.location) loadWeather(state.location); });
+document.getElementById('weather-retry').addEventListener('click', () => { if (state.location) loadWeather(state.location); });
 
 const resultList = document.getElementById('search-results');
 function activateResult(event) {

@@ -1,0 +1,22 @@
+{
+  "url": "http://127.0.0.1:4273/",
+  "checkedAt": "2026-11-23T06:00:01.271Z",
+  "browser": "157.0.8103.38",
+  "requestedCity": "Dar es Salaam",
+  "selectedCity": "Dar es Salaam",
+  "geocodingStatus": 200,
+  "forecastStatus": 200,
+  "timezone": "Africa/Dar_es_Salaam",
+  "forecastDays": 5,
+  "modelValidTimeUnix": 1795412700,
+  "apiTemperatureCelsius": 27.3,
+  "displayedTemperature": "27°C",
+  "widths": [
+    1440,
+    768,
+    390,
+    320
+  ],
+  "runtimeErrors": [],
+  "mocked": false
+}

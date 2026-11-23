@@ -26,9 +26,11 @@ export function setSearchBusy(busy) {
 
 export function renderLocations(locations, status = '') {
   const list = document.getElementById('search-results');
+  list.setAttribute('role', 'listbox');
   list.replaceChildren();
   for (const [index, location] of locations.entries()) {
     const row = element('li', 'search-result'); row.dataset.index = index;
+    row.setAttribute('role', 'option'); row.setAttribute('aria-selected', 'false'); row.tabIndex = 0;
     const details = element('div');
     details.append(element('strong', '', location.name), element('span', '', [location.admin1, location.country].filter(Boolean).join(', ') || 'Region information unavailable'));
     row.append(icon('pin'), details, element('span', 'result-country', location.countryCode));
@@ -37,4 +39,13 @@ export function renderLocations(locations, status = '') {
   document.getElementById('search-panel').hidden = false;
   document.getElementById('result-count').textContent = locations.length ? `${locations.length} ${locations.length === 1 ? 'match' : 'matches'}` : '';
   document.getElementById('search-status').textContent = status;
+}
+
+export function renderLocation(location, timezone = location.timezone) {
+  document.getElementById('location-name').textContent = location.name;
+  document.getElementById('location-region').textContent = [location.admin1, location.country].filter(Boolean).join(' · ') || 'Region information unavailable';
+  document.getElementById('location-timezone').textContent = timezone || 'Timezone information unavailable';
+  document.getElementById('location-date').textContent = 'Forecast for your selected location';
+  document.getElementById('welcome').hidden = true;
+  document.getElementById('weather-shell').hidden = false;
 }

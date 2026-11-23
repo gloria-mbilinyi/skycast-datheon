@@ -4,6 +4,12 @@ export function normalizeLocation(value) {
   const text = (value, maximum) => typeof value === 'string' ? value.trim().slice(0, maximum) : '';
   return { id: String(value.id ?? `${value.latitude},${value.longitude}`).slice(0, 100), name: text(value.name, 160), admin1: text(value.admin1, 120), country: text(value.country, 120), countryCode: /^[A-Z]{2}$/.test(value.country_code || value.countryCode || '') ? value.country_code || value.countryCode : '', latitude: value.latitude, longitude: value.longitude, timezone: text(value.timezone, 100) };
 }
+export function locationKey(location) {
+  return `${location.latitude.toFixed(5)},${location.longitude.toFixed(5)}`;
+}
+export function chooseLocation(locations, index) {
+  return Number.isInteger(index) && index >= 0 && index < locations.length ? locations[index] : null;
+}
 export function validateCityQuery(value) {
   if (typeof value !== 'string') throw new SearchValidationError('Enter a city to find its forecast.');
   const query = value.normalize('NFKC').trim().replace(/\s+/g, ' ');

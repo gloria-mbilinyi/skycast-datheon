@@ -147,7 +147,7 @@ function dismissSearch() {
   clearTimeout(suggestionTimer); searchGate.cancel(); state.locations = [];
   document.getElementById('search-panel').hidden = true; setSearchBusy(false); combobox.synchronize();
 }
-document.addEventListener('click', event => { if (!event.target.closest('#search-section')) dismissSearch(); });
+document.addEventListener('pointerdown', event => { if (!event.target.closest('#search-section')) dismissSearch(); });
 document.addEventListener('keydown', event => {
   if (event.key === '/' && !event.ctrlKey && !event.metaKey && !event.altKey && !event.target.matches('input, textarea, select, [contenteditable="true"]')) { event.preventDefault(); searchInput.focus(); }
 });

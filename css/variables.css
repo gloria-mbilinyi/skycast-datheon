@@ -49,7 +49,7 @@ h1, h2 { letter-spacing: -.045em; }
 .button.secondary { border-color: var(--line); background: var(--surface); }
 .button.secondary:hover { border-color: #b5c7dc; background: var(--blue-soft); }
 .button.small { min-height: 40px; font-size: .8125rem; padding: 8px 13px; }
-.eyebrow { font-size: .6875rem; font-weight: 700; letter-spacing: .15em; color: var(--blue); }
+.eyebrow { font-size: .75rem; font-weight: 700; letter-spacing: .15em; color: var(--blue); }
 .field-error { font-size: .875rem; color: var(--danger); margin-top: 9px; }
 .field-error:empty { display: none; }
 [aria-invalid='true'] { box-shadow: inset 0 0 0 2px var(--danger); }

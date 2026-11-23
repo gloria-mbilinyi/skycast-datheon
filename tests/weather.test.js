@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { normalizeWeather } from '../js/weather.js';
+import { normalizeWeather, describeWeather } from '../js/weather.js';
 import { buildForecastURL } from '../js/api.js';
 import { formatAt, dateKeyInZone } from '../js/utils.js';
 test('normalizes current model data without converting missing or zero values into fiction', () => {
@@ -22,4 +22,11 @@ test('timestamps format in the location timezone rather than the viewer timezone
   assert.equal(dateKeyInZone(seconds, 'Asia/Tokyo'), '2026-11-24');
   assert.equal(dateKeyInZone(seconds, 'America/New_York'), '2026-11-23');
   assert.equal(formatAt(null, 'UTC'), 'Unavailable');
+});
+test('all documented WMO codes map to conditions, including severe storms and night icons', () => {
+  for (const code of [0,1,2,3,45,48,51,53,55,56,57,61,63,65,66,67,71,73,75,77,80,81,82,85,86,95,96,97,99]) assert.notEqual(describeWeather(code, true).icon, 'unknown');
+  assert.equal(describeWeather(0, false).icon, 'moon'); assert.equal(describeWeather(2, false).icon, 'night-cloud');
+  assert.equal(describeWeather(65, true).label, 'Heavy rain');
+  assert.equal(describeWeather(99, true).label, 'Thunderstorm with heavy hail');
+  for (const code of [null, undefined, 999, '0']) assert.equal(describeWeather(code, true).label, 'Condition unavailable');
 });

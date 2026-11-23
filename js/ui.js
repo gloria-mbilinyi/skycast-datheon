@@ -1,4 +1,5 @@
 import { formatAt } from './utils.js';
+import { describeWeather } from './weather.js';
 
 export function element(tag, className = '', text = '') {
   const node = document.createElement(tag);
@@ -59,8 +60,9 @@ export function renderCurrentWeather(weather, location, fetchedAt) {
   temperature.replaceChildren();
   if (weather.current.temperature === null) temperature.append(element('span', 'unavailable', 'Unavailable'));
   else temperature.append(document.createTextNode(Math.round(weather.current.temperature)), element('span', 'temp-unit', '°C'));
-  document.getElementById('current-condition').textContent = weather.current.code === null ? 'Condition unavailable' : `Weather code ${weather.current.code}`;
-  document.getElementById('current-art').replaceChildren(icon('unknown', true));
+  const condition = describeWeather(weather.current.code, weather.current.isDay);
+  document.getElementById('current-condition').textContent = condition.label;
+  document.getElementById('current-art').replaceChildren(icon(condition.icon, true));
   document.getElementById('day-period').textContent = weather.current.isDay === true ? 'Daytime' : weather.current.isDay === false ? 'Nighttime' : 'Daylight unavailable';
   document.getElementById('model-time').textContent = `Model valid ${formatAt(weather.current.time, weather.timezone, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })}`;
   document.getElementById('last-updated').textContent = `Retrieved ${formatAt(fetchedAt / 1000, weather.timezone)} · ${weather.timezone}`;

@@ -44,6 +44,8 @@
   .footer-credit { text-align: left; }
 }
 @media (max-width: 600px) {
+  .loading-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .skeleton.big, .skeleton.big + .skeleton { grid-column: span 2; min-height: 220px; }
   .header-inner { padding: 17px 19px; gap: 12px; }
   .brand { font-size: 1.4rem; }
   .brand img { width: 33px; height: 33px; }

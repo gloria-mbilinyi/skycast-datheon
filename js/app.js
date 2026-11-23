@@ -50,6 +50,9 @@ function selectLocation(location) {
 async function loadWeather(location) {
   const request = weatherGate.begin();
   state.weather = null;
+  document.body.dataset.weather = 'neutral';
+  document.getElementById('forecast-nav').hidden = true;
+  document.getElementById('stale-notice').hidden = true;
   document.getElementById('weather-content').hidden = true;
   document.getElementById('weather-error').hidden = true;
   document.getElementById('weather-loading').hidden = false;

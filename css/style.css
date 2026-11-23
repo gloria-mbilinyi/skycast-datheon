@@ -155,3 +155,12 @@ main { max-width: 1280px; padding: 43px 40px 27px; margin: auto; }
 .source-copy > p + p { margin-top: 5px; }
 .source-copy a { text-underline-offset: 3px; }
 .footer-credit { font-size: .6875rem; white-space: nowrap; text-align: right; line-height: 1.8; }
+.weather-loading { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: .875rem; padding-top: 5px; }
+.spinner, #search-form[aria-busy='true'] button::before { display: inline-block; content: ''; width: 18px; height: 18px; border: 2px solid #a4b7ce; border-right-color: var(--blue); border-radius: 50%; animation: spin .8s linear infinite; flex-shrink: 0; }
+#search-form[aria-busy='true'] button::before { width: 14px; height: 14px; border-color: #ffffff55; border-right-color: #fff; }
+.loading-grid { width: 100%; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; margin-top: 12px; }
+.skeleton { min-height: 135px; background: linear-gradient(100deg, #e3eaf2 10%, #f5f8fb 40%, #e3eaf2 70%); background-size: 220% 100%; border-radius: 17px; animation: shimmer 1.5s linear infinite; }
+.skeleton.big { grid-column: span 3; min-height: 280px; }
+.skeleton.big + .skeleton { min-height: 280px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes shimmer { to { background-position: -220% 0; } }

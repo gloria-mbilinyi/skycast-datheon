@@ -1,3 +1,4 @@
+import { validateCityQuery, normalizeLocation } from './search.js';
 export const GEOCODING_URL = 'https://geocoding-api.open-meteo.com/v1/search';
 export const FORECAST_URL = 'https://api.open-meteo.com/v1/forecast';
 
@@ -49,4 +50,21 @@ export function createLatestRequest() {
     },
     cancel() { generation++; controller?.abort(); },
   };
+}
+
+export async function searchLocations(query, options) {
+  const url = new URL(GEOCODING_URL);
+  url.search = new URLSearchParams({ name: validateCityQuery(query), count: '8', language: 'en', format: 'json' });
+  const data = await requestJSON(url.href, options);
+  if (data.results === undefined) return [];
+  if (!Array.isArray(data.results)) throw new ApiError('data', 'The location service returned an unexpected result. Please try again.');
+  const seen = new Set();
+  const locations = data.results.map(normalizeLocation).filter(location => {
+    if (!location) return false;
+    const key = `${location.id}:${location.latitude}:${location.longitude}`;
+    if (seen.has(key)) return false;
+    seen.add(key); return true;
+  });
+  if (data.results.length && !locations.length) throw new ApiError('data', 'The location service returned incomplete location details. Please try again.');
+  return locations.slice(0, 8);
 }

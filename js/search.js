@@ -1,4 +1,9 @@
 export class SearchValidationError extends Error {}
+export function normalizeLocation(value) {
+  if (!value || typeof value.name !== 'string' || !value.name.trim() || !Number.isFinite(value.latitude) || !Number.isFinite(value.longitude) || Math.abs(value.latitude) > 90 || Math.abs(value.longitude) > 180) return null;
+  const text = (value, maximum) => typeof value === 'string' ? value.trim().slice(0, maximum) : '';
+  return { id: String(value.id ?? `${value.latitude},${value.longitude}`).slice(0, 100), name: text(value.name, 160), admin1: text(value.admin1, 120), country: text(value.country, 120), countryCode: /^[A-Z]{2}$/.test(value.country_code || value.countryCode || '') ? value.country_code || value.countryCode : '', latitude: value.latitude, longitude: value.longitude, timezone: text(value.timezone, 100) };
+}
 export function validateCityQuery(value) {
   if (typeof value !== 'string') throw new SearchValidationError('Enter a city to find its forecast.');
   const query = value.normalize('NFKC').trim().replace(/\s+/g, ' ');

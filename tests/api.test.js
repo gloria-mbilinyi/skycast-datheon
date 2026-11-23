@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { requestJSON, createLatestRequest, ApiError } from '../js/api.js';
+import { requestJSON, createLatestRequest, searchLocations, ApiError } from '../js/api.js';
 const url = 'https://api.open-meteo.com/v1/forecast';
 const response = (body, status = 200, headers) => new Response(JSON.stringify(body), { status, headers });
 test('processes successful API JSON without credentials', async () => {
@@ -30,4 +30,15 @@ test('latest-request guard prevents old results from replacing a newer search', 
   const gate = createLatestRequest(); const first = gate.begin(); const second = gate.begin();
   assert.equal(first.signal.aborted, true); assert.equal(first.isCurrent(), false); assert.equal(second.isCurrent(), true);
   gate.cancel(); assert.equal(second.isCurrent(), false);
+});
+test('geocoding safely encodes a global city query and preserves multiple matches', async () => {
+  const locations = await searchLocations('São Paulo, BR', { fetchImpl: async target => {
+    const query = new URL(target).searchParams; assert.equal(query.get('name'), 'São Paulo, BR'); assert.equal(query.get('count'), '8');
+    return response({ results: [{ id: 1, name: 'São Paulo', country: 'Brazil', latitude: -23.55, longitude: -46.63 }, { id: 2, name: 'São Paulo', admin1: 'Another region', latitude: -24, longitude: -45 }] });
+  } });
+  assert.equal(locations.length, 2); assert.equal(locations[1].admin1, 'Another region');
+});
+test('unknown cities return an empty list while malformed geocoding is rejected', async () => {
+  assert.deepEqual(await searchLocations('Nowhere', { fetchImpl: async () => response({}) }), []);
+  await assert.rejects(searchLocations('Berlin', { fetchImpl: async () => response({ results: [{}] }) }), error => error.kind === 'data');
 });

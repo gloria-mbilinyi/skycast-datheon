@@ -102,8 +102,9 @@ export function renderRecents(locations) {
   for (const [index, location] of locations.entries()) {
     const button = element('button'); button.type = 'button'; button.dataset.recent = index;
     const fullName = [location.name, location.admin1, location.country].filter(Boolean).join(', ');
-    button.setAttribute('aria-label', `Reopen weather for ${fullName}`); button.title = fullName;
-    button.append(icon('clock'), document.createTextNode([location.name, location.countryCode].filter(Boolean).join(', '))); list.append(button);
+    const visibleName = [location.name, location.countryCode].filter(Boolean).join(', ');
+    button.setAttribute('aria-label', `Reopen weather for ${visibleName}; ${fullName}`); button.title = fullName;
+    button.append(icon('clock'), document.createTextNode(visibleName)); list.append(button);
   }
 }
 
@@ -118,6 +119,8 @@ export function renderForecast(weather, unit = 'celsius') {
     const temperatures = element('div', 'forecast-temps');
     const high = element('strong'); high.append(element('span', 'sr-only', 'High '), document.createTextNode(temperatureText(day.high, unit)));
     const low = element('span'); low.append(element('span', 'sr-only', 'Low '), document.createTextNode(temperatureText(day.low, unit)));
+    if (day.high === null) high.classList.add('unavailable');
+    if (day.low === null) low.classList.add('unavailable');
     temperatures.append(high, low);
     card.append(weekday, date, icon(condition.icon, true), element('p', 'forecast-label', condition.label), temperatures);
     grid.append(card);

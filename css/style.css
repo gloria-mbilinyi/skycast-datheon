@@ -172,3 +172,7 @@ main { max-width: 1280px; padding: 43px 40px 27px; margin: auto; }
 .current-art { flex: 0 1 40%; }
 .current-art svg { width: 100%; height: auto; max-width: 205px; }
 .hero-temperature { overflow-wrap: anywhere; }
+.location-heading > div { min-width: 0; max-width: 100%; }
+.location-heading .eyebrow span { min-width: 0; overflow-wrap: anywhere; }
+.forecast-temps .unavailable { font-size: .875rem; font-weight: 400; letter-spacing: 0; }
+.forecast-temps > * { max-width: 100%; overflow-wrap: anywhere; }

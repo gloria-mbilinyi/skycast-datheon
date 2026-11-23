@@ -172,7 +172,7 @@ for (const width of [1440,768,390,320]) {
     const state = serviceStates.get(page);
     const findings = [];
     for (const [theme,code,isDay] of [['clear',0,1],['cloud',3,1],['rain',61,1],['snow',73,1],['night',0,0]]) {
-      state.weatherBody = weatherFixture({ code, isDay, temperature: 35 });
+      state.weatherBody = weatherFixture({ code, isDay, temperature: theme === 'snow' ? -5 : 45 });
       await page.locator('#refresh-weather').click(); await expect(page.locator('body')).toHaveAttribute('data-weather',theme);
       await noOverflow(page);
       const violations = (await accessibility(page)).violations;

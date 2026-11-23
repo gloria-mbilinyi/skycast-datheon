@@ -158,7 +158,11 @@ npm run test:live
 
 ## Deployment
 
-Target: free **GitHub Pages**, using a GitHub Actions workflow that verifies deterministic checks before publishing. The production milestone adds the static release build and enables HTTPS. Success is reported only after the workflow, served revision, and real API-backed production behavior are verified.
+GitHub Pages address: [SkyCast live demo](https://gloria-mbilinyi.github.io/skycast-datheon/).
+
+`.github/workflows/pages.yml` verifies every push and pull request to `main` using all 34 unit and 23 mocked browser tests plus source/asset checks. Only successful pushes to `main` deploy. Actions are pinned to verified commit hashes. Live API checks remain separate so temporary provider outages do not affect deterministic CI.
+
+`npm run build` creates `dist/` from an explicit app-file allowlist: HTML, CSS, JavaScript, and icons. Test fixtures, screenshots, development dependencies, Git metadata, and credentials are excluded. `build-info.json` identifies the served source revision. GitHub Pages uses HTTPS; initial setup selects **Settings → Pages → GitHub Actions** before the first successful workflow publishes the site.
 
 Relative asset/module paths support the repository subdirectory `/skycast-datheon/`. The app can also be served as a static Cloudflare Pages project without backend infrastructure.
 

@@ -33,3 +33,37 @@ export function initializeSearchForm(onSearch) {
   });
   return input;
 }
+
+export function initializeCombobox(input, { getLocations, onSelect, onDismiss }) {
+  let active = -1;
+  const list = document.getElementById('search-results');
+  const panel = document.getElementById('search-panel');
+  input.setAttribute('role', 'combobox'); input.setAttribute('aria-autocomplete', 'list');
+  input.setAttribute('aria-controls', 'search-results'); input.setAttribute('aria-expanded', 'false');
+  function synchronize() {
+    active = -1; input.removeAttribute('aria-activedescendant');
+    input.setAttribute('aria-expanded', !panel.hidden && getLocations().length > 0);
+    for (const [index, row] of [...list.children].entries()) { row.id = `city-option-${index}`; row.tabIndex = -1; row.setAttribute('aria-selected', 'false'); }
+  }
+  function setActive(index) {
+    active = index;
+    for (const [position, row] of [...list.children].entries()) {
+      const selected = position === active; row.classList.toggle('is-active', selected); row.setAttribute('aria-selected', selected);
+      if (selected) { input.setAttribute('aria-activedescendant', row.id); row.scrollIntoView({ block: 'nearest' }); }
+    }
+  }
+  input.addEventListener('keydown', event => {
+    const locations = getLocations();
+    if (event.key === 'Escape') { onDismiss(); event.preventDefault(); return; }
+    if (panel.hidden || !locations.length) return;
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      event.preventDefault();
+      const next = active === -1 ? event.key === 'ArrowDown' ? 0 : locations.length - 1 : (active + (event.key === 'ArrowDown' ? 1 : -1) + locations.length) % locations.length;
+      setActive(next);
+    } else if (event.key === 'Enter' && active !== -1) { event.preventDefault(); onSelect(locations[active]); }
+    else if ((event.key === 'Home' || event.key === 'End') && active !== -1) { event.preventDefault(); setActive(event.key === 'Home' ? 0 : locations.length - 1); }
+    else if (event.key === 'Tab') onDismiss();
+  });
+  synchronize();
+  return { synchronize };
+}

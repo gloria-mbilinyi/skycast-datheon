@@ -48,7 +48,7 @@ export function renderLocations(locations, status = '') {
   list.replaceChildren();
   for (const [index, location] of locations.entries()) {
     const row = element('li', 'search-result'); row.dataset.index = index;
-    row.setAttribute('role', 'option'); row.setAttribute('aria-selected', 'false'); row.tabIndex = 0;
+    row.setAttribute('role', 'option'); row.setAttribute('aria-selected', 'false'); row.tabIndex = -1;
     const details = element('div');
     details.append(element('strong', '', location.name), element('span', '', [location.admin1, location.country].filter(Boolean).join(', ') || 'Region information unavailable'));
     row.append(icon('pin'), details, element('span', 'result-country', location.countryCode));

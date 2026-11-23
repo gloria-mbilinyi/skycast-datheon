@@ -1,4 +1,4 @@
-import { initializeSearchForm, chooseLocation, locationKey } from './search.js';
+import { initializeSearchForm, initializeCombobox, chooseLocation, locationKey, validateCityQuery } from './search.js';
 import { searchLocations, fetchWeather, createLatestRequest, ApiError, errorDetails } from './api.js';
 import { normalizeWeather } from './weather.js';
 import { renderLocations, renderLocation, renderCurrentWeather, setSearchBusy, announce, configureRetry, renderRecents, showStorageNotice } from './ui.js';
@@ -13,25 +13,30 @@ const searchGate = createLatestRequest();
 const weatherGate = createLatestRequest();
 let searchRetryAt = 0; let weatherRetryAt = 0;
 const searchInput = initializeSearchForm(runSearch);
+let suggestionTimer;
+const combobox = initializeCombobox(searchInput, { getLocations: () => state.locations, onSelect: selectLocation, onDismiss: dismissSearch });
 
 async function runSearch(query) {
+  clearTimeout(suggestionTimer);
   document.getElementById('search-error').textContent = ''; searchInput.removeAttribute('aria-invalid');
   document.getElementById('search-retry').hidden = true;
   state.lastQuery = query;
   const request = searchGate.begin();
   state.locations = [];
-  renderLocations([], 'Looking for matching cities…'); setSearchBusy(true);
+  renderLocations([], 'Looking for matching cities…'); combobox.synchronize(); setSearchBusy(true);
   try {
     if (Date.now() < searchRetryAt) throw new ApiError('rate-limit', 'Please wait for the search rate limit to clear.', { retryAt: searchRetryAt });
     const locations = await searchLocations(query, { signal: request.signal });
     if (!request.isCurrent()) return;
     state.locations = locations;
     renderLocations(locations, locations.length ? 'Choose the city and region you mean.' : `No cities found for “${query}”. Try a nearby city or add a country.`);
+    combobox.synchronize();
     announce(locations.length ? `${locations.length} matching locations found.` : 'No matching cities found.');
   } catch (error) {
     if (!request.isCurrent() || error.kind === 'cancelled') return;
     const details = errorDetails(error); searchRetryAt = details.retryAt;
     renderLocations([], `${details.title} ${details.message}`);
+    combobox.synchronize();
     document.getElementById('search-retry').hidden = false;
     configureRetry('search-retry', searchRetryAt, 'Try search again');
     configureRetry('search-submit', searchRetryAt, 'Find forecast');
@@ -40,8 +45,8 @@ async function runSearch(query) {
 }
 
 searchInput.addEventListener('input', () => {
-  searchGate.cancel(); state.locations = [];
-  document.getElementById('search-panel').hidden = true; setSearchBusy(false);
+  dismissSearch(); clearTimeout(suggestionTimer);
+  try { const query = validateCityQuery(searchInput.value); if (query.length >= 3) suggestionTimer = setTimeout(() => runSearch(query), 400); } catch { /* Validation is announced only on explicit submission. */ }
 });
 for (const button of document.querySelectorAll('[data-example]')) {
   button.disabled = false;
@@ -49,11 +54,13 @@ for (const button of document.querySelectorAll('[data-example]')) {
 }
 
 function selectLocation(location) {
+  clearTimeout(suggestionTimer);
   searchGate.cancel(); setSearchBusy(false);
   state.location = location; state.weather = null;
   recents = nextRecents(recents, location); storage.saveRecents(recents); renderRecents(recents);
   searchInput.value = [location.name, location.countryCode].filter(Boolean).join(', ');
   document.getElementById('search-panel').hidden = true;
+  combobox.synchronize();
   document.getElementById('weather-content').hidden = true;
   document.getElementById('weather-error').hidden = true;
   renderLocation(location);
@@ -135,3 +142,12 @@ if (lastSuccess) {
   renderDashboard(); document.getElementById('refresh-weather').disabled = false;
   searchInput.value = [state.location.name, state.location.countryCode].filter(Boolean).join(', ');
 }
+
+function dismissSearch() {
+  clearTimeout(suggestionTimer); searchGate.cancel(); state.locations = [];
+  document.getElementById('search-panel').hidden = true; setSearchBusy(false); combobox.synchronize();
+}
+document.addEventListener('click', event => { if (!event.target.closest('#search-section')) dismissSearch(); });
+document.addEventListener('keydown', event => {
+  if (event.key === '/' && !event.ctrlKey && !event.metaKey && !event.altKey && !event.target.matches('input, textarea, select, [contenteditable="true"]')) { event.preventDefault(); searchInput.focus(); }
+});

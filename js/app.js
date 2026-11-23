@@ -1,9 +1,14 @@
-import { initializeSearchForm, chooseLocation } from './search.js';
+import { initializeSearchForm, chooseLocation, locationKey } from './search.js';
 import { searchLocations, fetchWeather, createLatestRequest, ApiError, errorDetails } from './api.js';
 import { normalizeWeather } from './weather.js';
-import { renderLocations, renderLocation, renderCurrentWeather, setSearchBusy, announce, configureRetry } from './ui.js';
+import { renderLocations, renderLocation, renderCurrentWeather, setSearchBusy, announce, configureRetry, renderRecents, showStorageNotice } from './ui.js';
+import { createWeatherStorage, nextRecents, isCacheUsable } from './storage.js';
 
 const state = { locations: [], location: null, weather: null, unit: 'celsius', fetchedAt: null, lastQuery: '' };
+const storage = createWeatherStorage({ onError: showStorageNotice });
+let recents = storage.loadRecents(); state.unit = storage.loadUnit();
+let lastSuccess = storage.loadCache();
+renderRecents(recents);
 const searchGate = createLatestRequest();
 const weatherGate = createLatestRequest();
 let searchRetryAt = 0; let weatherRetryAt = 0;
@@ -46,6 +51,7 @@ for (const button of document.querySelectorAll('[data-example]')) {
 function selectLocation(location) {
   searchGate.cancel(); setSearchBusy(false);
   state.location = location; state.weather = null;
+  recents = nextRecents(recents, location); storage.saveRecents(recents); renderRecents(recents);
   searchInput.value = [location.name, location.countryCode].filter(Boolean).join(', ');
   document.getElementById('search-panel').hidden = true;
   document.getElementById('weather-content').hidden = true;
@@ -59,6 +65,7 @@ function selectLocation(location) {
 async function loadWeather(location) {
   const request = weatherGate.begin();
   state.weather = null;
+  state.stale = false;
   document.body.dataset.weather = 'neutral';
   document.getElementById('forecast-nav').hidden = true;
   document.getElementById('stale-notice').hidden = true;
@@ -72,11 +79,16 @@ async function loadWeather(location) {
     const response = await fetchWeather(location, { signal: request.signal });
     if (!request.isCurrent()) return;
     state.response = response; state.weather = normalizeWeather(response); state.fetchedAt = Date.now();
-    renderCurrentWeather(state.weather, location, state.fetchedAt, state.unit);
+    lastSuccess = { location, response, fetchedAt: state.fetchedAt }; storage.saveCache(lastSuccess);
+    renderDashboard();
     announce(`Weather estimates loaded for ${location.name}.`);
   } catch (error) {
     if (!request.isCurrent() || error.kind === 'cancelled') return;
     const details = errorDetails(error); weatherRetryAt = details.retryAt;
+    if (isCacheUsable(lastSuccess) && locationKey(lastSuccess.location) === locationKey(location)) {
+      state.response = lastSuccess.response; state.weather = normalizeWeather(lastSuccess.response); state.fetchedAt = lastSuccess.fetchedAt; state.stale = true;
+      renderDashboard();
+    }
     document.getElementById('weather-error-title').textContent = details.title;
     document.getElementById('weather-error-message').textContent = details.message;
     document.getElementById('weather-error').hidden = false;
@@ -105,8 +117,21 @@ function setUnit(unit, notify = true) {
   if (!['celsius', 'fahrenheit'].includes(unit)) return;
   state.unit = unit;
   for (const button of document.querySelectorAll('[data-unit]')) button.setAttribute('aria-pressed', button.dataset.unit === unit);
-  if (state.weather) renderCurrentWeather(state.weather, state.location, state.fetchedAt, state.unit);
+  if (state.weather) renderDashboard();
+  if (notify) storage.saveUnit(unit);
   if (notify) announce(`Temperatures shown in ${unit === 'fahrenheit' ? 'Fahrenheit' : 'Celsius'}.`);
 }
 for (const button of document.querySelectorAll('[data-unit]')) { button.disabled = false; button.addEventListener('click', () => setUnit(button.dataset.unit)); }
 setUnit(state.unit, false);
+
+function renderDashboard() { renderCurrentWeather(state.weather, state.location, state.fetchedAt, state.unit, { stale: state.stale }); }
+document.getElementById('recent-list').addEventListener('click', event => {
+  const button = event.target.closest('[data-recent]');
+  const location = button && recents[Number(button.dataset.recent)];
+  if (location) selectLocation(location);
+});
+if (lastSuccess) {
+  state.location = lastSuccess.location; state.response = lastSuccess.response; state.weather = normalizeWeather(lastSuccess.response); state.fetchedAt = lastSuccess.fetchedAt; state.stale = true;
+  renderDashboard(); document.getElementById('refresh-weather').disabled = false;
+  searchInput.value = [state.location.name, state.location.countryCode].filter(Boolean).join(', ');
+}

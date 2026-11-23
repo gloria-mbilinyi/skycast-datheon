@@ -68,7 +68,7 @@ export function renderLocation(location, timezone = location.timezone) {
   document.getElementById('weather-shell').hidden = false;
 }
 
-export function renderCurrentWeather(weather, location, fetchedAt, unit = 'celsius') {
+export function renderCurrentWeather(weather, location, fetchedAt, unit = 'celsius', { stale = false } = {}) {
   renderLocation(location, weather.timezoneKnown ? weather.timezone : 'UTC · location timezone unavailable');
   document.getElementById('location-date').textContent = formatAt(Date.now() / 1000, weather.timezone, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
   const temperature = document.getElementById('current-temperature');
@@ -87,6 +87,24 @@ export function renderCurrentWeather(weather, location, fetchedAt, unit = 'celsi
   renderMetrics(weather, unit);
   renderDailyHighlights(weather, unit);
   renderForecast(weather, unit);
+  document.getElementById('current-heading').textContent = stale ? 'SAVED MODEL ESTIMATE' : 'CURRENT MODEL ESTIMATE';
+  document.getElementById('stale-notice').hidden = !stale;
+  if (stale) {
+    document.getElementById('stale-message').textContent = `Retrieved ${formatAt(fetchedAt / 1000, weather.timezone, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })} · ${weather.timezone}. This saved response may be out of date. Refresh when your connection is available.`;
+    document.getElementById('data-quality').textContent = `Saved response · ${document.getElementById('data-quality').textContent}`;
+  }
+}
+
+export function showStorageNotice(message) { const node = document.getElementById('storage-notice'); node.textContent = message; node.hidden = !message; }
+export function renderRecents(locations) {
+  const list = document.getElementById('recent-list'); list.replaceChildren();
+  document.getElementById('recent-row').hidden = locations.length === 0;
+  for (const [index, location] of locations.entries()) {
+    const button = element('button'); button.type = 'button'; button.dataset.recent = index;
+    const fullName = [location.name, location.admin1, location.country].filter(Boolean).join(', ');
+    button.setAttribute('aria-label', `Reopen weather for ${fullName}`); button.title = fullName;
+    button.append(icon('clock'), document.createTextNode([location.name, location.countryCode].filter(Boolean).join(', '))); list.append(button);
+  }
 }
 
 export function renderForecast(weather, unit = 'celsius') {

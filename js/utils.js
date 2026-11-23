@@ -1,4 +1,8 @@
 export const finite = value => typeof value === 'number' && Number.isFinite(value) ? value : null;
+export function numberText(value, digits = 0) { return finite(value) === null ? 'Unavailable' : new Intl.NumberFormat('en', { maximumFractionDigits: digits }).format(value); }
+export function windCompass(value) {
+  return finite(value) === null || value < 0 || value > 360 ? null : ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'][Math.round(value / 22.5) % 16];
+}
 export function validTimezone(value) {
   if (typeof value !== 'string' || !value) return false;
   try { new Intl.DateTimeFormat('en', { timeZone: value }).format(0); return true; } catch { return false; }

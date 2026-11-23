@@ -1,4 +1,4 @@
-import { formatAt } from './utils.js';
+import { formatAt, numberText, windCompass } from './utils.js';
 import { describeWeather } from './weather.js';
 
 export function element(tag, className = '', text = '') {
@@ -68,4 +68,28 @@ export function renderCurrentWeather(weather, location, fetchedAt) {
   document.getElementById('last-updated').textContent = `Retrieved ${formatAt(fetchedAt / 1000, weather.timezone)} · ${weather.timezone}`;
   document.getElementById('data-quality').textContent = 'Current model estimates · daily forecasts';
   document.getElementById('weather-content').hidden = false;
+  renderMetrics(weather);
+}
+
+export function renderMeasurement(id, value, unit, digits = 0) {
+  const node = document.getElementById(id);
+  node.replaceChildren();
+  if (value === null) node.append(element('span', 'unavailable', 'Unavailable'));
+  else node.append(document.createTextNode(numberText(value, digits)), element('span', 'value-unit', unit));
+}
+export function renderMetrics(weather) {
+  const current = weather.current;
+  renderMeasurement('metric-feels', current.feelsLike, '°C');
+  renderMeasurement('metric-humidity', current.humidity, '%');
+  renderMeasurement('metric-wind', current.wind, 'km/h', 1);
+  renderMeasurement('metric-pressure', current.pressure, 'hPa');
+  const direction = windCompass(current.windDirection);
+  document.getElementById('wind-description').textContent = direction ? `${direction} · wind at 10 m` : 'Wind at 10 m above ground';
+  const facts = [];
+  if (current.wind !== null) facts.push(`Wind is estimated at ${numberText(current.wind, 1)} km/h.`);
+  if (current.humidity !== null) facts.push(`Relative humidity is ${numberText(current.humidity)}%.`);
+  if (current.pressure !== null) facts.push(`Sea-level pressure is ${numberText(current.pressure)} hPa.`);
+  document.getElementById('conditions-summary').textContent = facts.length ? `${describeWeather(current.code, current.isDay).label}. ${facts.join(' ')}` : 'Some weather details are unavailable from the service. Refresh to request a new estimate.';
+  document.getElementById('data-quality').textContent = [current.temperature, current.feelsLike, current.humidity, current.wind, current.pressure, current.code].some(value => value === null) ? 'Some current fields are unavailable' : 'Current model estimates · daily forecasts';
+  if (!weather.timezoneKnown) document.getElementById('data-quality').textContent += ' · UTC fallback';
 }

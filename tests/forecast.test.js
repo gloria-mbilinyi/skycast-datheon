@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { normalizeForecast } from '../js/forecast.js';
+import { normalizeForecast, buildTemperatureChart } from '../js/forecast.js';
 import { formatCalendarDate } from '../js/utils.js';
 const midnight = Date.parse('2026-11-22T21:00:00Z') / 1000;
 test('five-day data uses the API local date boundaries rather than the viewer timezone', () => {
@@ -15,4 +15,9 @@ test('missing, malformed and inconsistent daily fields never become invented zer
   assert.deepEqual(normalizeForecast({ daily: {} }), []);
   assert.equal(formatCalendarDate('2026-02-30'), 'Unavailable');
   assert.equal(normalizeForecast({ daily: { time: [midnight], temperature_2m_max: [10], temperature_2m_min: [20] } })[0].high, null);
+});
+test('temperature chart keeps gaps instead of replacing missing data with zeros', () => {
+  const chart = buildTemperatureChart([{ high: 30, low: 20 }, { high: null, low: 21 }, { high: 32, low: null }]);
+  assert.equal(chart.high[1], null); assert.equal(chart.low[2], null); assert.ok(Number.isFinite(chart.high[0].y));
+  assert.equal(buildTemperatureChart([{ high: null, low: null }]), null);
 });

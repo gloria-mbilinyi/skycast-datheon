@@ -1,5 +1,6 @@
-import { formatAt, numberText, windCompass, dateKeyInZone, temperatureText } from './utils.js';
+import { formatAt, numberText, windCompass, dateKeyInZone, temperatureText, formatCalendarDate } from './utils.js';
 import { describeWeather } from './weather.js';
+import { buildTemperatureChart } from './forecast.js';
 
 export function element(tag, className = '', text = '') {
   const node = document.createElement(tag);
@@ -70,6 +71,51 @@ export function renderCurrentWeather(weather, location, fetchedAt) {
   document.getElementById('weather-content').hidden = false;
   renderMetrics(weather);
   renderDailyHighlights(weather);
+  renderForecast(weather);
+}
+
+export function renderForecast(weather) {
+  const grid = document.getElementById('forecast-grid'); grid.replaceChildren();
+  const today = dateKeyInZone(Date.now() / 1000, weather.timezone);
+  for (const day of weather.days) {
+    const card = element('article', `forecast-card${day.date === today ? ' is-today' : ''}`);
+    const condition = describeWeather(day.code, true);
+    const weekday = element('h3', 'forecast-day', day.date === today ? 'Today' : formatCalendarDate(day.date, { weekday: 'short' }));
+    const date = element('time', 'forecast-date', formatCalendarDate(day.date)); date.dateTime = day.date;
+    const temperatures = element('div', 'forecast-temps');
+    const high = element('strong'); high.append(element('span', 'sr-only', 'High '), document.createTextNode(temperatureText(day.high)));
+    const low = element('span'); low.append(element('span', 'sr-only', 'Low '), document.createTextNode(temperatureText(day.low)));
+    temperatures.append(high, low);
+    card.append(weekday, date, icon(condition.icon, true), element('p', 'forecast-label', condition.label), temperatures);
+    grid.append(card);
+  }
+  document.getElementById('forecast-nav').hidden = weather.days.length === 0;
+  document.getElementById('forecast-note').textContent = !weather.days.length ? 'The service did not provide daily forecasts for this location.' : weather.days.length < 5 ? `Only ${weather.days.length} daily forecasts are available from the service.` : '';
+  renderTemperatureChart(weather.days);
+}
+
+export function renderTemperatureChart(days) {
+  const data = buildTemperatureChart(days);
+  document.getElementById('chart-card').hidden = !data;
+  const holder = document.getElementById('forecast-chart'); holder.replaceChildren();
+  if (!data) return;
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('viewBox', '0 0 600 165'); svg.setAttribute('role', 'img');
+  svg.setAttribute('aria-label', 'Daily high and low temperature trend. Exact values are in the forecast cards.');
+  const draw = (tag, attributes) => { const node = document.createElementNS(svg.namespaceURI, tag); for (const [key, value] of Object.entries(attributes)) node.setAttribute(key, value); svg.append(node); };
+  for (const y of [30, 85, 140]) draw('line', { x1: 20, x2: 580, y1: y, y2: y, stroke: '#e5ebf3', 'stroke-width': 1, 'stroke-dasharray': '4 5' });
+  for (const [field, color] of [['high', '#3266bd'], ['low', '#819ebf']]) {
+    let path = ''; let segmentStart = true;
+    for (const point of data[field]) {
+      if (!point) { segmentStart = true; continue; }
+      path += `${segmentStart ? 'M' : 'L'}${point.x.toFixed(2)} ${point.y.toFixed(2)} `; segmentStart = false;
+    }
+    draw('path', { d: path, fill: 'none', stroke: color, 'stroke-width': 3, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' });
+    for (const point of data[field].filter(Boolean)) draw('circle', { cx: point.x, cy: point.y, r: 4, fill: '#fff', stroke: color, 'stroke-width': 2 });
+  }
+  const labels = element('div', 'chart-days'); labels.style.gridTemplateColumns = `repeat(${days.length}, minmax(0, 1fr))`;
+  for (const day of days) labels.append(element('span', '', formatCalendarDate(day.date, { weekday: 'short' })));
+  holder.append(svg, labels);
 }
 
 export function renderDailyHighlights(weather) {

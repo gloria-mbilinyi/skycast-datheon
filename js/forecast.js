@@ -23,3 +23,12 @@ export function normalizeForecast(response) {
   }
   return days.sort((a, b) => a.date.localeCompare(b.date)).slice(0, 5);
 }
+
+export function buildTemperatureChart(days) {
+  if (days.filter(day => day.high !== null || day.low !== null).length < 2) return null;
+  const values = days.flatMap(day => [day.high, day.low]).filter(value => finite(value) !== null);
+  if (!values.length) return null;
+  const lower = Math.min(...values) - 2; const upper = Math.max(...values) + 2;
+  const points = field => days.map((day, index) => finite(day[field]) === null ? null : { x: 20 + index / Math.max(1, days.length - 1) * 560, y: 145 - (day[field] - lower) / (upper - lower) * 120 });
+  return { high: points('high'), low: points('low'), lower, upper };
+}

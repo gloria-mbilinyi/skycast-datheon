@@ -62,6 +62,7 @@ export function renderCurrentWeather(weather, location, fetchedAt) {
   if (weather.current.temperature === null) temperature.append(element('span', 'unavailable', 'Unavailable'));
   else temperature.append(document.createTextNode(Math.round(weather.current.temperature)), element('span', 'temp-unit', '°C'));
   const condition = describeWeather(weather.current.code, weather.current.isDay);
+  document.body.dataset.weather = condition.theme;
   document.getElementById('current-condition').textContent = condition.label;
   document.getElementById('current-art').replaceChildren(icon(condition.icon, true));
   document.getElementById('day-period').textContent = weather.current.isDay === true ? 'Daytime' : weather.current.isDay === false ? 'Nighttime' : 'Daylight unavailable';

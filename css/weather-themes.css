@@ -1,0 +1,9 @@
+body[data-weather='clear'] { --hero-start: #d7eaf8; --hero-end: #edf4fa; --page-glow: #e3edf9; }
+body[data-weather='cloud'] { --hero-start: #d8e1ed; --hero-end: #eaf0f7; --page-glow: #e6ebf2; }
+body[data-weather='rain'] { --hero-start: #cbddea; --hero-end: #e0eaf4; --page-glow: #dce7f3; }
+body[data-weather='snow'] { --hero-start: #d8e9f3; --hero-end: #f0f6fa; --page-glow: #e6f0f5; }
+body[data-weather='night'] { --hero-start: #162c49; --hero-end: #303e61; --hero-ink: #f4f7ff; --hero-muted: #c9d8ec; --page-glow: #e3e8f3; }
+body[data-weather='night'] .current-card { border-color: #344866; }
+body[data-weather='night'] .current-bottom { border-top-color: #ffffff25; }
+body[data-weather='night'] .day-period { background: #ffffff0d; border-color: #ffffff25; }
+.current-card { transition: color 250ms ease, background 250ms ease, border-color 250ms ease; }

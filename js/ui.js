@@ -1,4 +1,4 @@
-import { formatAt, numberText, windCompass } from './utils.js';
+import { formatAt, numberText, windCompass, dateKeyInZone, temperatureText } from './utils.js';
 import { describeWeather } from './weather.js';
 
 export function element(tag, className = '', text = '') {
@@ -69,6 +69,16 @@ export function renderCurrentWeather(weather, location, fetchedAt) {
   document.getElementById('data-quality').textContent = 'Current model estimates · daily forecasts';
   document.getElementById('weather-content').hidden = false;
   renderMetrics(weather);
+  renderDailyHighlights(weather);
+}
+
+export function renderDailyHighlights(weather) {
+  const currentDate = dateKeyInZone(weather.current.time ?? Date.now() / 1000, weather.timezone);
+  const day = weather.days.find(day => day.date === currentDate) || weather.days[0];
+  document.getElementById('current-range').textContent = day ? `High ${temperatureText(day.high)}  ·  Low ${temperatureText(day.low)}` : 'Daily high and low unavailable';
+  document.getElementById('sunrise-time').textContent = formatAt(day?.sunrise ?? null, weather.timezone);
+  document.getElementById('sunset-time').textContent = formatAt(day?.sunset ?? null, weather.timezone);
+  if (weather.days.length < 5) document.getElementById('data-quality').textContent += ` · ${weather.days.length} daily forecasts available`;
 }
 
 export function renderMeasurement(id, value, unit, digits = 0) {

@@ -1,5 +1,6 @@
 import { ApiError } from './api.js';
 import { finite, validEpoch, safeTimezone, validTimezone } from './utils.js';
+import { normalizeForecast } from './forecast.js';
 
 const conditions = new Map([
   [0, ['Clear sky', 'sun', 'clear']], [1, ['Mainly clear', 'sun', 'clear']], [2, ['Partly cloudy', 'partly', 'cloud']], [3, ['Overcast', 'cloud', 'cloud']],
@@ -27,6 +28,7 @@ export function normalizeWeather(response) {
   const humidity = finite(raw.relative_humidity_2m);
   const code = finite(raw.weather_code);
   return {
+    days: normalizeForecast(response),
     timezone: safeTimezone(response.timezone), timezoneKnown: validTimezone(response.timezone),
     utcOffsetSeconds: Number.isInteger(response.utc_offset_seconds) && Math.abs(response.utc_offset_seconds) <= 86400 ? response.utc_offset_seconds : 0,
     current: { time: validEpoch(raw.time), temperature: finite(raw.temperature_2m), feelsLike: finite(raw.apparent_temperature), humidity: humidity !== null && humidity >= 0 && humidity <= 100 ? humidity : null, wind: finite(raw.wind_speed_10m) !== null && raw.wind_speed_10m >= 0 ? raw.wind_speed_10m : null, windDirection: finite(raw.wind_direction_10m), pressure: finite(raw.pressure_msl) !== null && raw.pressure_msl > 0 ? raw.pressure_msl : null, code: Number.isInteger(code) && code >= 0 ? code : null, isDay: raw.is_day === 1 ? true : raw.is_day === 0 ? false : null },

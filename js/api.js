@@ -7,6 +7,12 @@ export class ApiError extends Error {
     super(message); this.name = 'ApiError'; this.kind = kind; this.status = status; this.retryAt = retryAt;
   }
 }
+export function errorDetails(error) {
+  const titles = { network: 'A little connection trouble.', timeout: 'The forecast is taking a little longer.', 'rate-limit': 'Let’s give the weather service a moment.', data: 'Some forecast details didn’t arrive.', service: 'This request couldn’t be completed.', http: 'The weather service is unavailable.' };
+  const known = error instanceof ApiError;
+  const retryAt = known && error.kind === 'rate-limit' ? Number.isFinite(error.retryAt) && error.retryAt > Date.now() ? error.retryAt : Date.now() + 30000 : 0;
+  return { title: titles[error.kind] || 'We couldn’t load that forecast.', message: known ? error.message : 'Something interrupted the request. Please try again.', retryAt };
+}
 
 export async function requestJSON(url, { signal, timeoutMs = 12000, fetchImpl = globalThis.fetch } = {}) {
   if (signal?.aborted) throw new ApiError('cancelled', 'Request canceled.');

@@ -28,6 +28,20 @@ export function setSearchBusy(busy) {
   document.getElementById('search-submit').textContent = busy ? 'Searching…' : 'Find forecast';
 }
 
+const retryTimers = new Map();
+export function configureRetry(id, until = 0, label = 'Try again') {
+  const button = document.getElementById(id);
+  clearInterval(retryTimers.get(id));
+  function update() {
+    const seconds = Math.max(0, Math.ceil((until - Date.now()) / 1000));
+    button.disabled = seconds > 0;
+    button.textContent = seconds ? `${label} in ${seconds}s` : label;
+    if (!seconds) { clearInterval(retryTimers.get(id)); retryTimers.delete(id); }
+    return seconds;
+  }
+  if (update()) retryTimers.set(id, setInterval(update, 1000));
+}
+
 export function renderLocations(locations, status = '') {
   const list = document.getElementById('search-results');
   list.setAttribute('role', 'listbox');

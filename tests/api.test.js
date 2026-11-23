@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { requestJSON, createLatestRequest, searchLocations, ApiError } from '../js/api.js';
+import { requestJSON, createLatestRequest, searchLocations, ApiError, errorDetails } from '../js/api.js';
 const url = 'https://api.open-meteo.com/v1/forecast';
 const response = (body, status = 200, headers) => new Response(JSON.stringify(body), { status, headers });
 test('processes successful API JSON without credentials', async () => {
@@ -41,4 +41,9 @@ test('geocoding safely encodes a global city query and preserves multiple matche
 test('unknown cities return an empty list while malformed geocoding is rejected', async () => {
   assert.deepEqual(await searchLocations('Nowhere', { fetchImpl: async () => response({}) }), []);
   await assert.rejects(searchLocations('Berlin', { fetchImpl: async () => response({ results: [{}] }) }), error => error.kind === 'data');
+});
+test('error presentation handles known failures and hides internal implementation errors', () => {
+  assert.match(errorDetails(new ApiError('timeout', 'Please retry')).title, /longer/);
+  assert.ok(errorDetails(new ApiError('rate-limit', 'Busy')).retryAt > Date.now());
+  assert.doesNotMatch(errorDetails(new Error('private internal stack detail')).message, /stack/);
 });

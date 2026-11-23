@@ -72,7 +72,7 @@ async function loadWeather(location) {
     const response = await fetchWeather(location, { signal: request.signal });
     if (!request.isCurrent()) return;
     state.response = response; state.weather = normalizeWeather(response); state.fetchedAt = Date.now();
-    renderCurrentWeather(state.weather, location, state.fetchedAt);
+    renderCurrentWeather(state.weather, location, state.fetchedAt, state.unit);
     announce(`Weather estimates loaded for ${location.name}.`);
   } catch (error) {
     if (!request.isCurrent() || error.kind === 'cancelled') return;
@@ -100,3 +100,13 @@ function activateResult(event) {
 }
 resultList.addEventListener('click', activateResult);
 resultList.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); activateResult(event); } });
+
+function setUnit(unit, notify = true) {
+  if (!['celsius', 'fahrenheit'].includes(unit)) return;
+  state.unit = unit;
+  for (const button of document.querySelectorAll('[data-unit]')) button.setAttribute('aria-pressed', button.dataset.unit === unit);
+  if (state.weather) renderCurrentWeather(state.weather, state.location, state.fetchedAt, state.unit);
+  if (notify) announce(`Temperatures shown in ${unit === 'fahrenheit' ? 'Fahrenheit' : 'Celsius'}.`);
+}
+for (const button of document.querySelectorAll('[data-unit]')) { button.disabled = false; button.addEventListener('click', () => setUnit(button.dataset.unit)); }
+setUnit(state.unit, false);

@@ -1,4 +1,4 @@
-import { formatAt, numberText, windCompass, dateKeyInZone, temperatureText, formatCalendarDate } from './utils.js';
+import { formatAt, numberText, windCompass, dateKeyInZone, temperatureText, formatCalendarDate, convertTemperature } from './utils.js';
 import { describeWeather } from './weather.js';
 import { buildTemperatureChart } from './forecast.js';
 
@@ -68,13 +68,13 @@ export function renderLocation(location, timezone = location.timezone) {
   document.getElementById('weather-shell').hidden = false;
 }
 
-export function renderCurrentWeather(weather, location, fetchedAt) {
+export function renderCurrentWeather(weather, location, fetchedAt, unit = 'celsius') {
   renderLocation(location, weather.timezoneKnown ? weather.timezone : 'UTC · location timezone unavailable');
   document.getElementById('location-date').textContent = formatAt(Date.now() / 1000, weather.timezone, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
   const temperature = document.getElementById('current-temperature');
   temperature.replaceChildren();
   if (weather.current.temperature === null) temperature.append(element('span', 'unavailable', 'Unavailable'));
-  else temperature.append(document.createTextNode(Math.round(weather.current.temperature)), element('span', 'temp-unit', '°C'));
+  else temperature.append(document.createTextNode(Math.round(convertTemperature(weather.current.temperature, unit))), element('span', 'temp-unit', unit === 'fahrenheit' ? '°F' : '°C'));
   const condition = describeWeather(weather.current.code, weather.current.isDay);
   document.body.dataset.weather = condition.theme;
   document.getElementById('current-condition').textContent = condition.label;
@@ -84,12 +84,12 @@ export function renderCurrentWeather(weather, location, fetchedAt) {
   document.getElementById('last-updated').textContent = `Retrieved ${formatAt(fetchedAt / 1000, weather.timezone)} · ${weather.timezone}`;
   document.getElementById('data-quality').textContent = 'Current model estimates · daily forecasts';
   document.getElementById('weather-content').hidden = false;
-  renderMetrics(weather);
-  renderDailyHighlights(weather);
-  renderForecast(weather);
+  renderMetrics(weather, unit);
+  renderDailyHighlights(weather, unit);
+  renderForecast(weather, unit);
 }
 
-export function renderForecast(weather) {
+export function renderForecast(weather, unit = 'celsius') {
   const grid = document.getElementById('forecast-grid'); grid.replaceChildren();
   const today = dateKeyInZone(Date.now() / 1000, weather.timezone);
   for (const day of weather.days) {
@@ -98,15 +98,16 @@ export function renderForecast(weather) {
     const weekday = element('h3', 'forecast-day', day.date === today ? 'Today' : formatCalendarDate(day.date, { weekday: 'short' }));
     const date = element('time', 'forecast-date', formatCalendarDate(day.date)); date.dateTime = day.date;
     const temperatures = element('div', 'forecast-temps');
-    const high = element('strong'); high.append(element('span', 'sr-only', 'High '), document.createTextNode(temperatureText(day.high)));
-    const low = element('span'); low.append(element('span', 'sr-only', 'Low '), document.createTextNode(temperatureText(day.low)));
+    const high = element('strong'); high.append(element('span', 'sr-only', 'High '), document.createTextNode(temperatureText(day.high, unit)));
+    const low = element('span'); low.append(element('span', 'sr-only', 'Low '), document.createTextNode(temperatureText(day.low, unit)));
     temperatures.append(high, low);
     card.append(weekday, date, icon(condition.icon, true), element('p', 'forecast-label', condition.label), temperatures);
     grid.append(card);
   }
   document.getElementById('forecast-nav').hidden = weather.days.length === 0;
   document.getElementById('forecast-note').textContent = !weather.days.length ? 'The service did not provide daily forecasts for this location.' : weather.days.length < 5 ? `Only ${weather.days.length} daily forecasts are available from the service.` : '';
-  renderTemperatureChart(weather.days);
+  document.querySelector('#chart-card figcaption p').textContent = `Daily temperature outlook · °${unit === 'fahrenheit' ? 'F' : 'C'}`;
+  renderTemperatureChart(weather.days.map(day => ({ ...day, high: convertTemperature(day.high, unit), low: convertTemperature(day.low, unit) })));
 }
 
 export function renderTemperatureChart(days) {
@@ -133,10 +134,10 @@ export function renderTemperatureChart(days) {
   holder.append(svg, labels);
 }
 
-export function renderDailyHighlights(weather) {
+export function renderDailyHighlights(weather, unit = 'celsius') {
   const currentDate = dateKeyInZone(weather.current.time ?? Date.now() / 1000, weather.timezone);
   const day = weather.days.find(day => day.date === currentDate) || weather.days[0];
-  document.getElementById('current-range').textContent = day ? `High ${temperatureText(day.high)}  ·  Low ${temperatureText(day.low)}` : 'Daily high and low unavailable';
+  document.getElementById('current-range').textContent = day ? `High ${temperatureText(day.high, unit)}  ·  Low ${temperatureText(day.low, unit)}` : 'Daily high and low unavailable';
   document.getElementById('sunrise-time').textContent = formatAt(day?.sunrise ?? null, weather.timezone);
   document.getElementById('sunset-time').textContent = formatAt(day?.sunset ?? null, weather.timezone);
   if (weather.days.length < 5) document.getElementById('data-quality').textContent += ` · ${weather.days.length} daily forecasts available`;
@@ -148,9 +149,9 @@ export function renderMeasurement(id, value, unit, digits = 0) {
   if (value === null) node.append(element('span', 'unavailable', 'Unavailable'));
   else node.append(document.createTextNode(numberText(value, digits)), element('span', 'value-unit', unit));
 }
-export function renderMetrics(weather) {
+export function renderMetrics(weather, unit = 'celsius') {
   const current = weather.current;
-  renderMeasurement('metric-feels', current.feelsLike, '°C');
+  renderMeasurement('metric-feels', convertTemperature(current.feelsLike, unit), unit === 'fahrenheit' ? '°F' : '°C');
   renderMeasurement('metric-humidity', current.humidity, '%');
   renderMeasurement('metric-wind', current.wind, 'km/h', 1);
   renderMeasurement('metric-pressure', current.pressure, 'hPa');

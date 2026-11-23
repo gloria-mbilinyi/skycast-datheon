@@ -26,4 +26,11 @@ export function formatCalendarDate(value, options = { month: 'short', day: 'nume
   if (date.getUTCFullYear() !== year || date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) return 'Unavailable';
   return new Intl.DateTimeFormat('en', { timeZone: 'UTC', ...options }).format(date);
 }
-export function temperatureText(value) { return finite(value) === null ? 'Unavailable' : `${Math.round(value)}°C`; }
+export function convertTemperature(value, unit = 'celsius') {
+  if (!['celsius', 'fahrenheit'].includes(unit)) throw new RangeError('Unsupported temperature unit');
+  return finite(value) === null ? null : unit === 'fahrenheit' ? value * 9 / 5 + 32 : value;
+}
+export function temperatureText(value, unit = 'celsius') {
+  const converted = convertTemperature(value, unit);
+  return converted === null ? 'Unavailable' : `${Math.round(converted)}°${unit === 'fahrenheit' ? 'F' : 'C'}`;
+}

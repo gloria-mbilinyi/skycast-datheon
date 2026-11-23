@@ -1,0 +1,126 @@
+@media (max-width: 1100px) {
+  .header-inner { gap: 35px; padding-inline: 28px; }
+  .header-caption { display: none; }
+  main { padding-inline: 28px; }
+  .intro-mark { display: none; }
+  .hero-grid { grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); gap: 18px; }
+  .current-card { padding-inline: 24px; }
+  .current-art svg { width: 165px; height: 160px; }
+  .current-bottom { font-size: .6875rem; }
+  .metric-card { padding: 18px; }
+  .metric-card dt { gap: 6px; }
+  .welcome-panel { padding: 40px; }
+  .welcome-copy h2 { font-size: 2.35rem; }
+  .forecast-grid { gap: 11px; }
+  .site-footer { align-items: flex-start; }
+}
+@media (max-width: 800px) {
+  .header-inner { padding: 20px 24px; gap: 25px; }
+  .site-header nav { gap: 18px; }
+  .site-header nav a { font-size: .8125rem; }
+  main { padding: 32px 24px 24px; }
+  .intro h1 { font-size: 2.1rem; }
+  .hero-grid { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); }
+  .current-main { gap: 8px; min-height: 200px; }
+  .current-art svg { width: 130px; height: 130px; }
+  .hero-temperature { font-size: 4.4rem; }
+  .current-card { padding: 22px; }
+  .current-top { align-items: flex-start; }
+  .condition-eyebrow { font-size: .5625rem; }
+  .daylight-card { padding: 22px 18px; }
+  .sun-journey { margin-top: 33px; }
+  .sun-times dd { font-size: 1.1rem; }
+  .metrics-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .forecast-card { padding: 18px 9px; }
+  .forecast-label { font-size: .75rem; }
+  .forecast-temps { font-size: 1.2rem; gap: 5px; }
+  .outlook-grid { grid-template-columns: minmax(0, 1fr); }
+  .summary-card { display: block; }
+  .welcome-panel { padding: 35px; gap: 15px; }
+  .welcome-copy h2 { font-size: 2.1rem; }
+  .welcome-art > svg { width: 230px; height: 210px; }
+  .site-footer { flex-wrap: wrap; }
+  .source-copy { flex: 1; min-width: 250px; }
+  .footer-credit { text-align: left; }
+}
+@media (max-width: 600px) {
+  .header-inner { padding: 17px 19px; gap: 12px; }
+  .brand { font-size: 1.4rem; }
+  .brand img { width: 33px; height: 33px; }
+  .site-header nav { display: none; }
+  .header-right { margin-left: auto; }
+  main { padding: 29px 18px 22px; }
+  .intro h1 { font-size: 1.85rem; margin-top: 9px; max-width: 340px; }
+  .intro-description { font-size: .8125rem; line-height: 1.8; }
+  .eyebrow { font-size: .625rem; }
+  .intro { margin-bottom: 23px; }
+  .search-input-wrap { flex-wrap: wrap; gap: 5px 10px; padding: 10px 12px; }
+  .search-input-wrap > svg { width: 17px; height: 17px; }
+  .search-input-wrap input { flex: 1; font-size: 1rem; }
+  .search-input-wrap .button { width: 100%; margin-top: 3px; }
+  .search-hint { font-size: .75rem; line-height: 1.8; }
+  .search-section { margin-bottom: 28px; }
+  .welcome-panel { display: flex; flex-direction: column-reverse; align-items: stretch; padding: 28px; min-height: auto; gap: 12px; }
+  .welcome-art { height: 190px; }
+  .welcome-art > svg { width: 210px; height: 190px; }
+  .orbit-one { width: 220px; height: 220px; }
+  .orbit-two { width: 330px; height: 330px; }
+  .sky-spark.one { top: 12px; right: 8px; }
+  .welcome-copy h2 { font-size: 2.1rem; }
+  .welcome-copy > p:not(.eyebrow) { font-size: .875rem; margin-top: 16px; }
+  .example-cities { margin-top: 22px; }
+  .example-cities button { min-height: 42px; }
+  .location-heading { align-items: flex-start; flex-direction: column; gap: 15px; }
+  .location-heading h2 { font-size: 1.85rem; }
+  .location-tools { width: 100%; justify-content: space-between; gap: 8px; }
+  .timezone-badge { max-width: calc(100% - 100px); font-size: .75rem; }
+  .hero-grid { grid-template-columns: minmax(0, 1fr); gap: 18px; }
+  .current-card { padding: 23px; }
+  .condition-eyebrow { font-size: .625rem; }
+  .current-main { min-height: 190px; }
+  .hero-temperature { font-size: 5.1rem; }
+  .current-art svg { width: 142px; height: 145px; }
+  .current-bottom { gap: 7px; font-size: .75rem; }
+  .daylight-card { padding: 23px; }
+  .sun-journey { margin-block: 19px 8px; }
+  .sun-journey svg { height: 76px; }
+  .sun-times dd { font-size: 1.25rem; }
+  .metrics-grid { gap: 12px; margin-top: 18px; margin-bottom: 30px; }
+  .metric-card { padding: 16px; }
+  .metric-card dt { font-size: .75rem; flex-wrap: wrap; }
+  .metric-icon { width: 28px; height: 28px; }
+  .metric-card dd { font-size: 1.65rem; }
+  .metric-card > p { font-size: .75rem; line-height: 1.7; }
+  .section-heading { align-items: flex-start; flex-direction: column; gap: 10px; }
+  .section-heading h2 { font-size: 1.5rem; }
+  .section-note { font-size: .75rem; }
+  .forecast-grid { grid-template-columns: minmax(0, 1fr); gap: 10px; margin-top: 20px; }
+  .forecast-card { display: grid; grid-template-columns: minmax(65px, 1fr) 62px minmax(0, 1.4fr); align-items: center; text-align: left; padding: 16px; gap: 0 12px; }
+  .forecast-card > .weather-icon { margin: 0; width: 62px; height: 60px; grid-row: 1 / 3; grid-column: 2; }
+  .forecast-date { grid-column: 1; grid-row: 2; margin-top: 0; }
+  .forecast-day { grid-column: 1; grid-row: 1; font-size: .875rem; align-self: end; }
+  .forecast-label { grid-column: 3; grid-row: 2; min-height: 0; align-self: start; font-size: .75rem; }
+  .forecast-temps { grid-column: 3; grid-row: 1; margin-top: 0; justify-content: flex-start; align-self: end; font-size: 1.3rem; }
+  .chart-card { padding: 22px 18px 18px; }
+  .chart-card figcaption { align-items: flex-start; flex-direction: column; }
+  .chart-days { font-size: .75rem; }
+  .outlook-grid { gap: 18px; margin-top: 22px; }
+  .site-footer { gap: 18px; margin-top: 33px; padding-top: 23px; }
+  .source-copy { flex-basis: 100%; min-width: 0; font-size: .75rem; }
+  .footer-credit { font-size: .75rem; }
+  .site-footer > div:first-child p { font-size: .75rem; }
+  .search-result > .result-country { display: none; }
+}
+@media (max-width: 359px) {
+  main { padding-inline: 13px; }
+  .header-inner { padding-inline: 13px; }
+  .unit-switch button { min-width: 36px; }
+  .intro h1 { font-size: 1.7rem; }
+  .current-card { padding: 19px; }
+  .current-art svg { width: 115px; height: 125px; }
+  .hero-temperature { font-size: 4.5rem; }
+  .day-period { font-size: .6875rem; padding-inline: 8px; }
+  .forecast-card { grid-template-columns: 60px 50px minmax(0, 1fr); gap: 0 8px; }
+  .forecast-card > .weather-icon { width: 50px; }
+  .metric-card { padding: 14px; }
+}
